@@ -5,6 +5,7 @@
 #include <LittleFS.h>
 #include "eeprom_management.h"
 #include "network.h"
+#include "save.h"
 
 
 const char* ap_ssid = "FocusHub_Setup_AP";
@@ -13,6 +14,7 @@ const char* ap_password = "12345678";
 extern void writeWiFiCredentials(const String &ssid, const String &password);
 extern String readSSID();
 extern String readPassword();
+extern void saveLearntime(String name, String duration, String breaktime);
 
 //* WLAN Verbindung 
 bool tryConnectToWiFi(String ssid, String password) {
@@ -141,6 +143,41 @@ void setupInterfaceServer(ESP8266WebServer &server) {
     server.streamFile(file, "text/html");
     file.close();
   });
+  server.on("/test", [&server]() {
+    Serial.println("Test page requested");
+    server.send(200, "text/html", "<h2>Test Seite funktioniert!</h2><p>Alles in Ordnung.</p>");
+  });
+  server.on("/create_learntime", [&server]() {
+    Serial.println("Create Learntime requested");
+    File file = LittleFS.open("create_learntime.html", "r");
+    if (!file) {
+      server.send(404, "text/plain", "File not found");
+      return;
+    }
+    server.streamFile(file, "text/html");
+    file.close();
+  });
+  server.on("/save_learntime", HTTP_POST, [&server]() {
+    String name = server.arg("name");
+    String duration = server.arg("duration");
+    String breaktime = server.arg("breaktime");
+    saveLearntime(name, duration, breaktime);
+    Serial.println("Learntime Created:");
+    Serial.println("Name: " + name);
+    Serial.println("Duration: " + duration);
+    Serial.println("Breaktime: " + breaktime);
+    server.send(200, "text/html", "<h2>Lernzeit erstellt!</h2><p>Du kannst dieses Fenster schließen.</p>");
 
+  });
+  server.on("/overview_learntimes", [&server]() {
+    Serial.println("Overview Learntimes requested");
+    File file = LittleFS.open("learntimes.csv", "r");
+    if (!file) {
+      server.send(404, "text/plain", "File not found");
+      return;
+    }
+    server.streamFile(file, "text/html");
+    file.close();
+  });
 }
 

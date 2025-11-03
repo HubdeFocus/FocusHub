@@ -1,5 +1,5 @@
 #ifndef NETWORK_H
-#define NETRK_H
+#define NETWORK_H
 
 
 bool tryConnectToWiFi(String ssid, String password);
