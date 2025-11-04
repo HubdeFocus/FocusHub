@@ -2,7 +2,7 @@
 
 void saveLearntime(String name, String duration,  String breaktime) {
   String filePath = "learntimes.csv";
-  File file = LittleFS.open(filePath, "w");
+  File file = LittleFS.open(filePath, "a");
   if (!file) {
     Serial.println("Fehler beim Öffnen der Datei zum Speichern der Lernzeit.");
     return;

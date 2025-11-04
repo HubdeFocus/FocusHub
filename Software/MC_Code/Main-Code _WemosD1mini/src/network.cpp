@@ -166,18 +166,58 @@ void setupInterfaceServer(ESP8266WebServer &server) {
     Serial.println("Name: " + name);
     Serial.println("Duration: " + duration);
     Serial.println("Breaktime: " + breaktime);
-    server.send(200, "text/html", "<h2>Lernzeit erstellt!</h2><p>Du kannst dieses Fenster schließen.</p>");
+    //request->redirect("/overview_learntimes");
+    server.send(200, "text/html", "<h2>Lernzeit gespeichert!</h2><p>Du kannst dieses Fenster schließen.</p>");
 
   });
   server.on("/overview_learntimes", [&server]() {
-    Serial.println("Overview Learntimes requested");
-    File file = LittleFS.open("learntimes.csv", "r");
-    if (!file) {
-      server.send(404, "text/plain", "File not found");
-      return;
-    }
-    server.streamFile(file, "text/html");
-    file.close();
-  });
+  Serial.println("Overview Learntimes requested");
+
+  File csv_file = LittleFS.open("/learntimes.csv", "r");
+  File html_file = LittleFS.open("/overview_learntimes.html", "r");
+
+  if (!csv_file || !html_file) {
+    server.send(404, "text/plain", "File not found");
+    return;
+  }
+
+  String html = html_file.readString();
+  html_file.close();
+
+  // Build table with fixed headers
+  String table = "<table border='1' style='border-collapse:collapse;width:100%;text-align:center'>";
+  table += "<thead><tr><th>Name</th><th>Duration</th><th>Breaktime</th></tr></thead><tbody>";
+
+  while (csv_file.available()) {
+    String line = csv_file.readStringUntil('\n');
+    line.trim();
+    if (line.length() == 0) continue;
+
+    // Split line by commas
+    int firstComma = line.indexOf(',');
+    int secondComma = line.indexOf(',', firstComma + 1);
+
+    if (firstComma == -1 || secondComma == -1) continue; // skip malformed lines
+
+    String name = line.substring(0, firstComma);
+    String duration = line.substring(firstComma + 1, secondComma);
+    String breaktime = line.substring(secondComma + 1);
+
+    name.trim();
+    duration.trim();
+    breaktime.trim();
+
+    table += "<tr><td>" + name + "</td><td>" + duration + "</td><td>" + breaktime + "</td></tr>";
+  }
+
+  table += "</tbody></table>";
+  csv_file.close();
+
+  html.replace("{{CSV_TABLE}}", table);
+  server.send(200, "text/html", html);
+});
+
+
+
 }
 

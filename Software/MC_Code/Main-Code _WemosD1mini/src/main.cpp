@@ -118,7 +118,7 @@ void setup() {
 
 void loop() {
   delay(1);
-  if (frame_counter % 12000 == 0) {  // alle 10 Minuten aktualisieren
+  if (frame_counter % 12000 == 0) {  // alle 10 Minuten aktualisieren //!md20 das sind 12 sekunden. delay ist in ms
     Serial.println("\n Aktualisierte Wetterdaten ");
     auto coords = getCoordinates(postalCode, countryCode, apiKey);
     Serial.println("Koordinaten: " + String(coords.first, 6) + "," + String(coords.second, 6));
