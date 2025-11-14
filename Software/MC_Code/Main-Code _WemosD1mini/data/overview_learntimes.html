@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FOCUSHub</title>
+    <style>
+      body { font-family: sans-serif; margin: 2em; background: #f5f5f5; }
+      table { background: white; box-shadow: 0 0 5px rgba(0,0,0,0.1); }
+      th { background: #ddd; }
+      td, th { padding: 8px; }
+    </style>
+</head>
+<body>
+    <h1>Learntime Overview</h1>
+    <p>Here are your saved learntimes:</p>
+    <pre>{{CSV_TABLE}}</pre>
+    <br>
+    <button onclick="location.href='/create_learntime'">Create New Learntime</button>
+    <button onclick="location.href='/'">Back to Home</button>
+
+</body>
+</html>

@@ -5,6 +5,8 @@
 #include <LittleFS.h>
 #include "eeprom_management.h"
 #include "network.h"
+#include "save.h"
+#include "learn.h"
 
 
 const char* ap_ssid = "FocusHub_Setup_AP";
@@ -13,6 +15,8 @@ const char* ap_password = "12345678";
 extern void writeWiFiCredentials(const String &ssid, const String &password);
 extern String readSSID();
 extern String readPassword();
+extern void saveLearntime(String name, String duration, String breaktime);
+extern void startLearningSession(const String &name, int duration, int breaktime);
 
 //* WLAN Verbindung 
 bool tryConnectToWiFi(String ssid, String password) {
@@ -52,36 +56,34 @@ void setupAP(ESP8266WebServer &server, DNSServer &dnsServer) {
   WiFi.softAP(ap_ssid, ap_password);
   delay(500);
 
-  IPAddress IP = WiFi.softAPIP();
   Serial.print("Access Point Name: ");
   Serial.println(ap_ssid);
   Serial.println("Access Point Password: ");
   Serial.println(ap_password);
 
   dnsServer.start(DNS_PORT, "*", apIP);
+  server.begin();
 
   server.on("/", [&server]() {
     File file = LittleFS.open("/AP_form.html", "r");
     if (!file) {
-      server.send(500, "text/plain", "File not found");
+      server.send(404, "text/plain", "File not found");
       return;
     }
-    Serial.println(file);
-    // server.streamFile(file, "text/html");
-    server.send(200, "text/html", "hellö wörld");
-    //file.close();
+    server.streamFile(file, "text/html");
+    file.close();
   });
 
   server.on("/save", HTTP_POST, [&server]() {
-    String ssid = server.arg("ssid");
     String password = server.arg("password");
-
+    String ssid = server.arg("ssid");
     Serial.println("SSID: " + ssid);
     Serial.println("Password: " + password);
-
-    writeWiFiCredentials(ssid, password);
     server.send(200, "text/html", "<h2>Verbindung wird hergestellt...</h2><p>Du kannst dieses Fenster schließen.</p>");
+    
+    writeWiFiCredentials(ssid, password);
     tryConnectToWiFi(ssid, password);
+    server.stop();
   });
 
    server.onNotFound([&server]() {
@@ -123,3 +125,105 @@ bool checkAndResetWifi(ESP8266WebServer &server, DNSServer &dnsServer) {
   return false;
 }
 
+
+void setupInterfaceServer(ESP8266WebServer &server) {
+  // get Ip and print
+  Serial.print("Hosting interface at: ");
+  Serial.println(WiFi.localIP());
+  // server starten
+  server.begin();
+  Serial.println("Server gestartet");
+  
+
+  server.on("/", [&server]() {
+    Serial.println("Interface requested");
+    File file = LittleFS.open("index.html", "r");
+    if (!file) {
+      server.send(404, "text/plain", "File not found");
+      return;
+    }
+    server.streamFile(file, "text/html");
+    file.close();
+  });
+  server.on("/test", [&server]() {
+    Serial.println("Test page requested");
+    server.send(200, "text/html", "<h2>Test Seite funktioniert!</h2><p>Alles in Ordnung.</p>");
+  });
+  server.on("/create_learntime", [&server]() {
+    Serial.println("Create Learntime requested");
+    File file = LittleFS.open("create_learntime.html", "r");
+    if (!file) {
+      server.send(404, "text/plain", "File not found");
+      return;
+    }
+    server.streamFile(file, "text/html");
+    file.close();
+  });
+  server.on("/save_learntime", HTTP_POST, [&server]() {
+    String name = server.arg("name");
+    String duration = server.arg("duration");
+    String breaktime = server.arg("breaktime");
+    saveLearntime(name, duration, breaktime);
+    Serial.println("Learntime Created:");
+    Serial.println("Name: " + name);
+    Serial.println("Duration: " + duration);
+    Serial.println("Breaktime: " + breaktime);
+    //request->redirect("/overview_learntimes");
+    server.send(200, "text/html", "<h2>Lernzeit gespeichert!</h2><p>Du kannst dieses Fenster schließen.</p>");
+
+  });
+  server.on("/overview_learntimes", [&server]() {
+  Serial.println("Overview Learntimes requested");
+
+  File data_file = LittleFS.open("/learntimes.html", "r");
+  File html_file = LittleFS.open("/overview_learntimes.html", "r");
+
+  if (!data_file || !html_file) {
+    server.send(404, "text/plain", "File not found");
+    return;
+  }
+
+  String html = html_file.readString();
+  html_file.close();
+
+  // Build table with fixed headers
+  String table = "<table border='1' style='border-collapse:collapse;width:100%;text-align:center'>";
+  table += "<thead><tr><th>Name</th><th>Duration</th><th>Breaktime</th><th></th></tr></thead><tbody>";
+
+  table += data_file.readString();
+  
+  table += "</tbody></table>";
+  data_file.close();
+
+  html.replace("{{CSV_TABLE}}", table);
+  server.send(200, "text/html", html);
+});
+
+server.on("/fiulk", [&server]() {
+  Serial.println("Overview Learntimes requested");
+
+  File csv_file = LittleFS.open("/learntimes.csv", "r");
+
+  if (!csv_file) {
+    server.send(404, "text/plain", "File not found");
+    return;
+  }
+
+  server.streamFile(csv_file, "text/html");
+  csv_file.close();
+
+});
+  server.on("/start_learntime", HTTP_GET, [&server]() {
+    // Read parameters from URL query string
+    String name = server.arg("name");
+    String duration = server.arg("duration");
+    String breaktime = server.arg("breaktime");
+
+    Serial.println("Start Learntime requested");
+
+    startLearningSession(name, duration.toInt(), breaktime.toInt());
+    server.sendHeader("Location", "/");
+    server.send(303);
+
+});
+}
