@@ -6,6 +6,7 @@
 #include "eeprom_management.h"
 #include "network.h"
 #include "save.h"
+#include "learn.h"
 
 
 const char* ap_ssid = "FocusHub_Setup_AP";
@@ -15,6 +16,7 @@ extern void writeWiFiCredentials(const String &ssid, const String &password);
 extern String readSSID();
 extern String readPassword();
 extern void saveLearntime(String name, String duration, String breaktime);
+extern void startLearningSession(const String &name, int duration, int breaktime);
 
 //* WLAN Verbindung 
 bool tryConnectToWiFi(String ssid, String password) {
@@ -173,10 +175,10 @@ void setupInterfaceServer(ESP8266WebServer &server) {
   server.on("/overview_learntimes", [&server]() {
   Serial.println("Overview Learntimes requested");
 
-  File csv_file = LittleFS.open("/learntimes.csv", "r");
+  File data_file = LittleFS.open("/learntimes.html", "r");
   File html_file = LittleFS.open("/overview_learntimes.html", "r");
 
-  if (!csv_file || !html_file) {
+  if (!data_file || !html_file) {
     server.send(404, "text/plain", "File not found");
     return;
   }
@@ -186,38 +188,42 @@ void setupInterfaceServer(ESP8266WebServer &server) {
 
   // Build table with fixed headers
   String table = "<table border='1' style='border-collapse:collapse;width:100%;text-align:center'>";
-  table += "<thead><tr><th>Name</th><th>Duration</th><th>Breaktime</th></tr></thead><tbody>";
+  table += "<thead><tr><th>Name</th><th>Duration</th><th>Breaktime</th><th></th></tr></thead><tbody>";
 
-  while (csv_file.available()) {
-    String line = csv_file.readStringUntil('\n');
-    line.trim();
-    if (line.length() == 0) continue;
-
-    // Split line by commas
-    int firstComma = line.indexOf(',');
-    int secondComma = line.indexOf(',', firstComma + 1);
-
-    if (firstComma == -1 || secondComma == -1) continue; // skip malformed lines
-
-    String name = line.substring(0, firstComma);
-    String duration = line.substring(firstComma + 1, secondComma);
-    String breaktime = line.substring(secondComma + 1);
-
-    name.trim();
-    duration.trim();
-    breaktime.trim();
-
-    table += "<tr><td>" + name + "</td><td>" + duration + "</td><td>" + breaktime + "</td></tr>";
-  }
-
+  table += data_file.readString();
+  
   table += "</tbody></table>";
-  csv_file.close();
+  data_file.close();
 
   html.replace("{{CSV_TABLE}}", table);
   server.send(200, "text/html", html);
 });
 
+server.on("/fiulk", [&server]() {
+  Serial.println("Overview Learntimes requested");
 
+  File csv_file = LittleFS.open("/learntimes.csv", "r");
 
+  if (!csv_file) {
+    server.send(404, "text/plain", "File not found");
+    return;
+  }
+
+  server.streamFile(csv_file, "text/html");
+  csv_file.close();
+
+});
+  server.on("/start_learntime", HTTP_GET, [&server]() {
+    // Read parameters from URL query string
+    String name = server.arg("name");
+    String duration = server.arg("duration");
+    String breaktime = server.arg("breaktime");
+
+    Serial.println("Start Learntime requested");
+
+    startLearningSession(name, duration.toInt(), breaktime.toInt());
+    server.sendHeader("Location", "/");
+    server.send(303);
+
+});
 }
-
