@@ -3,20 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FOCUSHub</title>
+    <title>FOCUSHub – Create Learntime</title>
+    <style>
+        body {
+            font-family: Inter, Arial, sans-serif;
+            background: #eef2f7;
+            padding: 2em;
+            margin: 0;
+            text-align: center;
+        }
+
+        .card {
+            background: #fff;
+            padding: 2.2em;
+            max-width: 480px;
+            margin: auto;
+            border-radius: 18px;
+            box-shadow: 0 6px 22px rgba(0,0,0,0.07);
+        }
+
+        h1 { margin-top: 0; }
+
+        input {
+            width: 90%;
+            padding: 12px;
+            margin: 10px 0 20px;
+            border: 1px solid #d0d4dd;
+            border-radius: 10px;
+            background: #f5f7fb;
+            font-size: 1em;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: #4a7df0;
+            outline: none;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            text-align: left;
+            margin-left: 5%;
+        }
+
+        button, input[type="submit"] {
+            padding: 12px 22px;
+            border: none;
+            border-radius: 10px;
+            background: #4a7df0;
+            color: white;
+            font-size: 1em;
+            cursor: pointer;
+            transition: 0.25s;
+        }
+
+        button:hover, input[type="submit"]:hover {
+            background: #3b66c7;
+            transform: translateY(-2px);
+        }
+    </style>
 </head>
 <body>
-    <h1>Create Learntime Session</h1>
-    <form action="/save_learntime" method="POST">
-        <label for="name">Name:</label><br>
-        <input type="text" id="name" name="name" required><br><br>
-        
-        <label for="duration">Duration (minutes):</label><br>
-        <input type="number" id="duration" name="duration" required><br><br>
-        
-        <label for="breaktime">Breaktime (minutes):</label><br>
-        <input type="number" id="breaktime" name="breaktime" required><br><br>
-        
-        <input type="submit">
+    <div class="card">
+        <h1>Create Learntime Session</h1>
+
+        <form action="/save_learntime" method="POST">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="duration">Duration (minutes):</label>
+            <input type="number" id="duration" name="duration" required>
+
+            <label for="breaktime">Breaktime (minutes):</label>
+            <input type="number" id="breaktime" name="breaktime" required>
+
+            <input type="submit" value="Save Learntime">
+        </form>
+
+        <button onclick="location.href='/'">Back to Home</button>
+    </div>
 </body>
 </html>
