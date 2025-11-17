@@ -169,11 +169,10 @@ void setupInterfaceServer(ESP8266WebServer &server) {
     Serial.println("Duration: " + duration);
     Serial.println("Breaktime: " + breaktime);
     //request->redirect("/overview_learntimes");
-    server.send(200, "text/html", "<h2>Lernzeit gespeichert!</h2><p>Du kannst dieses Fenster schließen.</p>");
-
+    server.sendHeader("Location", "/overview_learntimes");
+    server.send(303);
   });
   server.on("/overview_learntimes", [&server]() {
-  Serial.println("Overview Learntimes requested");
 
   File data_file = LittleFS.open("/learntimes.html", "r");
   File html_file = LittleFS.open("/overview_learntimes.html", "r");
@@ -197,21 +196,6 @@ void setupInterfaceServer(ESP8266WebServer &server) {
 
   html.replace("{{CSV_TABLE}}", table);
   server.send(200, "text/html", html);
-});
-
-server.on("/fiulk", [&server]() {
-  Serial.println("Overview Learntimes requested");
-
-  File csv_file = LittleFS.open("/learntimes.csv", "r");
-
-  if (!csv_file) {
-    server.send(404, "text/plain", "File not found");
-    return;
-  }
-
-  server.streamFile(csv_file, "text/html");
-  csv_file.close();
-
 });
   server.on("/start_learntime", HTTP_GET, [&server]() {
     // Read parameters from URL query string
