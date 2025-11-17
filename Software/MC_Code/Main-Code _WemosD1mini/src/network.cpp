@@ -186,12 +186,10 @@ void setupInterfaceServer(ESP8266WebServer &server) {
   html_file.close();
 
   // Build table with fixed headers
-  String table = "<table border='1' style='border-collapse:collapse;width:100%;text-align:center'>";
-  table += "<thead><tr><th>Name</th><th>Duration</th><th>Breaktime</th><th></th></tr></thead><tbody>";
+  String table = ""; //"<table border='1' style='border-collapse:collapse;width:100%;text-align:center'>";
 
   table += data_file.readString();
   
-  table += "</tbody></table>";
   data_file.close();
 
   html.replace("{{CSV_TABLE}}", table);

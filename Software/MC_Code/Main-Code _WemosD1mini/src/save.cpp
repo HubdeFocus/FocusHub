@@ -7,13 +7,13 @@ void saveLearntime(String name, String duration,  String breaktime) {
     Serial.println("Fehler beim Öffnen der Datei zum Speichern der Lernzeit.");
     return;
   }
-  file.print("<tr><td>");
+  file.print("<tr><td data-label=\"Name\">");
   file.print(name);
-  file.print("</td><td>");
+  file.print("</td><td data-label=\"Duration\">");
   file.print(duration);
-  file.print("</td><td>");
+  file.print("</td><td data-label=\"Breaktime\">");
   file.print(breaktime);
-  file.print("</td><td><a href=\"/start_learntime?name=");
+  file.print("</td><td data-label=\"Action\"><a href=\"/start_learntime?name=");
   file.print(name);
   file.print("&duration=");
   file.print(duration);

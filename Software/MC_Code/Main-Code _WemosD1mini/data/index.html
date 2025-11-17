@@ -4,13 +4,55 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FOCUSHub</title>
+    <style>
+        body {
+            font-family: Inter, Arial, sans-serif;
+            background: #eef2f7;
+            margin: 0;
+            padding: 2em;
+            text-align: center;
+        }
+
+        .card {
+            background: #fff;
+            padding: 2.2em;
+            max-width: 480px;
+            margin: auto;
+            border-radius: 18px;
+            box-shadow: 0 6px 22px rgba(0,0,0,0.07);
+        }
+
+        h1 {
+            margin-top: 0;
+            letter-spacing: 0.5px;
+        }
+
+        button {
+            padding: 12px 22px;
+            margin: 10px;
+            border: none;
+            border-radius: 10px;
+            background: #4a7df0;
+            color: white;
+            font-size: 1em;
+            transition: 0.25s;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #3b66c7;
+            transform: translateY(-2px);
+        }
+    </style>
 </head>
 <body>
-    <h1>Welcome to FOCUSHub</h1>
-    <p>This is the main interface for FOCUSHub.</p>
-    <button onclick="location.href='/overview_learntimes'">Learntimes</button>
-    <button onclick="location.href='/social'">View Stats</button>
-    <button onclick="location.href='/settings'">Settings</button>
+    <div class="card">
+        <h1>FOCUSHub</h1>
+        <p>Your productivity control center.</p>
 
+        <button onclick="location.href='/overview_learntimes'">Learntimes</button>
+        <button onclick="location.href='/social'">View Stats</button>
+        <button onclick="location.href='/settings'">Settings</button>
+    </div>
 </body>
 </html>
