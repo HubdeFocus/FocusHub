@@ -16,7 +16,7 @@ extern void writeWiFiCredentials(const String &ssid, const String &password);
 extern String readSSID();
 extern String readPassword();
 extern void saveLearntime(String name, String duration, String breaktime);
-extern void startLearningSession(const String &name, int duration, int breaktime);
+extern void runNewLearntime(const String &name, int duration, int breaktime);
 
 //* WLAN Verbindung 
 bool tryConnectToWiFi(String ssid, String password) {
@@ -197,13 +197,17 @@ void setupInterfaceServer(ESP8266WebServer &server) {
 });
   server.on("/start_learntime", HTTP_GET, [&server]() {
     // Read parameters from URL query string
+    if (isLearning) {
+      server.send(200, "text/html", "<h2>Ein Lernprogramm läuft bereits. Bitte abbrechen.</h2>");
+      return;
+    }
     String name = server.arg("name");
     String duration = server.arg("duration");
     String breaktime = server.arg("breaktime");
 
     Serial.println("Start Learntime requested");
 
-    startLearningSession(name, duration.toInt(), breaktime.toInt());
+    runNewLearntime(name, duration.toInt(), breaktime.toInt());
     server.sendHeader("Location", "/");
     server.send(303);
 

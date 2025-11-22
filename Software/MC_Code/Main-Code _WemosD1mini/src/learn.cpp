@@ -2,6 +2,8 @@
 #include <Arduino.h>
 #include <vector>
 
+bool isLearning = false;
+
 class Learntime {
   public:
     Learntime(const String &name, const std::vector<int> &durations)
@@ -43,5 +45,18 @@ void runLearntime(const Learntime &lt) {
   Serial.println("Learntime beendet.");
 }
 
+Learntime createLearntime(const String &name, int duration, int breaktime) {
+  std::vector<int> durations;
+  for (int i = 0; i < 4; i++) { // 4 Lernphasen
+    durations.push_back(duration);
+    if (i < 3) { // Pause nach jeder Lernphase außer der letzten
+      durations.push_back(breaktime);
+    }
+  }
+  return Learntime(name, durations);
+}
 
-
+void runNewLearntime(const String &name, int duration, int breaktime) {
+  Learntime lt = createLearntime(name, duration, breaktime);
+  runLearntime(lt);
+}
