@@ -2,5 +2,6 @@
 #define LEARN_H
 #include <Arduino.h>
 
-void startLearningSession(const String &name, int duration, int breaktime);
+void runNewLearntime(const String &name, int duration, int breaktime);
+const bool isLearning;
 #endif
